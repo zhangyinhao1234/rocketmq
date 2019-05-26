@@ -29,6 +29,9 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 
+/**
+ *
+ */
 public class MappedFileQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private static final InternalLogger LOG_ERROR = InternalLoggerFactory.getLogger(LoggerName.STORE_ERROR_LOGGER_NAME);
@@ -55,6 +58,9 @@ public class MappedFileQueue {
         this.allocateMappedFileService = allocateMappedFileService;
     }
 
+    /**
+     * 检查 mappedFiles 中是否存在非空的 MappedFile 是则抛出异常
+     */
     public void checkSelf() {
 
         if (!this.mappedFiles.isEmpty()) {
@@ -74,6 +80,11 @@ public class MappedFileQueue {
         }
     }
 
+    /**
+     * 获取最后修改时间大于 timestamp 的 mappedFile
+     * @param timestamp
+     * @return
+     */
     public MappedFile getMappedFileByTime(final long timestamp) {
         Object[] mfs = this.copyMappedFiles(0);
 
@@ -144,6 +155,10 @@ public class MappedFileQueue {
         }
     }
 
+    /**
+     * 加载目录下消息队列文件
+     * @return
+     */
     public boolean load() {
         File dir = new File(this.storePath);
         File[] files = dir.listFiles();
@@ -237,6 +252,7 @@ public class MappedFileQueue {
         return getLastMappedFile(startOffset, true);
     }
 
+
     public MappedFile getLastMappedFile() {
         MappedFile mappedFileLast = null;
 
@@ -285,6 +301,10 @@ public class MappedFileQueue {
         return true;
     }
 
+    /**
+     * 获取第一个文件的偏移量
+     * @return
+     */
     public long getMinOffset() {
 
         if (!this.mappedFiles.isEmpty()) {
