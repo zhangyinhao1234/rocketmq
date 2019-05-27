@@ -16,6 +16,10 @@
  */
 package org.apache.rocketmq.common;
 
+
+/**
+ * 消息队列版本信息
+ */
 public class MQVersion {
 
     public static final int CURRENT_VERSION = Version.V4_5_1.ordinal();

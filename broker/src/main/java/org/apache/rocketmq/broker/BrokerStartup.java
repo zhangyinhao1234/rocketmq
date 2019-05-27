@@ -87,7 +87,13 @@ public class BrokerStartup {
         }
     }
 
+    /**
+     * tcp 连接控制器
+     * @param args
+     * @return
+     */
     public static BrokerController createBrokerController(String[] args) {
+        //设置版本号
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
         if (null == System.getProperty(NettySystemConfig.COM_ROCKETMQ_REMOTING_SOCKET_SNDBUF_SIZE)) {
