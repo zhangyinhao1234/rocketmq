@@ -41,6 +41,7 @@ import org.apache.rocketmq.store.schedule.ScheduleMessageService;
 
 /**
  * Store all metadata downtime for recovery, data protection reliability
+ * 写入数据的和核心类
  */
 public class CommitLog {
     // Message's MAGIC CODE daa320a7
