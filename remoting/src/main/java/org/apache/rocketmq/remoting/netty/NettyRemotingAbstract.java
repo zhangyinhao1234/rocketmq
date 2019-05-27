@@ -65,6 +65,7 @@ public abstract class NettyRemotingAbstract {
 
     /**
      * Semaphore to limit maximum number of on-going asynchronous requests, which protects system memory footprint.
+     * 信号量
      */
     protected final Semaphore semaphoreAsync;
 
