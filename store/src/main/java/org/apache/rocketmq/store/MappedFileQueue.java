@@ -229,6 +229,7 @@ public class MappedFileQueue {
                     nextNextFilePath, this.mappedFileSize);
             } else {
                 try {
+                    //构建内存映射文件 默认1G
                     mappedFile = new MappedFile(nextFilePath, this.mappedFileSize);
                 } catch (IOException e) {
                     log.error("create mappedFile exception", e);

@@ -590,6 +590,7 @@ public class CommitLog {
             msg.setStoreTimestamp(beginLockTimestamp);
 
             if (null == mappedFile || mappedFile.isFull()) {
+                //获取最新的文件，顺序写
                 mappedFile = this.mappedFileQueue.getLastMappedFile(0); // Mark: NewFile may be cause noise
             }
             if (null == mappedFile) {
@@ -1215,7 +1216,7 @@ public class CommitLog {
             final MessageExtBrokerInner msgInner) {
             // STORETIMESTAMP + STOREHOSTADDRESS + OFFSET <br>
 
-            // PHY OFFSET   要写入的文件位置
+            // PHY OFFSET   要写入的文件位置，只是用于计算msgid
             long wroteOffset = fileFromOffset + byteBuffer.position();
 
             this.resetByteBuffer(hostHolder, 8);
@@ -1339,6 +1340,7 @@ public class CommitLog {
             // Write messages to the queue buffer  *****  消息数据写入文件 *******
             byteBuffer.put(this.msgStoreItemMemory.array(), 0, msgLen);
 
+            //构造写入结果
             AppendMessageResult result = new AppendMessageResult(AppendMessageStatus.PUT_OK, wroteOffset, msgLen, msgId,
                 msgInner.getStoreTimestamp(), queueOffset, CommitLog.this.defaultMessageStore.now() - beginTimeMills);
 
@@ -1439,6 +1441,11 @@ public class CommitLog {
             return result;
         }
 
+        /**
+         * pos指针到0
+         * @param byteBuffer
+         * @param limit
+         */
         private void resetByteBuffer(final ByteBuffer byteBuffer, final int limit) {
             byteBuffer.flip();
             byteBuffer.limit(limit);

@@ -357,6 +357,7 @@ public class DefaultMessageStore implements MessageStore {
      * @return
      */
     public PutMessageResult putMessage(MessageExtBrokerInner msg) {
+        //各项检查
         if (this.shutdown) {
             log.warn("message store has shutdown, so putMessage is forbidden");
             return new PutMessageResult(PutMessageStatus.SERVICE_NOT_AVAILABLE, null);
@@ -397,6 +398,7 @@ public class DefaultMessageStore implements MessageStore {
         }
 
         long beginTime = this.getSystemClock().now();
+
         //进行数据存储
         PutMessageResult result = this.commitLog.putMessage(msg);
 
@@ -406,6 +408,7 @@ public class DefaultMessageStore implements MessageStore {
         }
         this.storeStatsService.setPutMessageEntireTimeMax(eclipseTime);
 
+        //异常次数记录
         if (null == result || !result.isOk()) {
             this.storeStatsService.getPutMessageFailedTimes().incrementAndGet();
         }
