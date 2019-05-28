@@ -58,6 +58,11 @@ public class BrokerStartup {
         start(createBrokerController(args));
     }
 
+    /**
+     * 启动各线程
+     * @param controller
+     * @return
+     */
     public static BrokerController start(BrokerController controller) {
         try {
 
@@ -153,6 +158,7 @@ public class BrokerStartup {
                 System.exit(-2);
             }
 
+            // 检查name server的地址合法性
             String namesrvAddr = brokerConfig.getNamesrvAddr();
             if (null != namesrvAddr) {
                 try {
@@ -213,6 +219,7 @@ public class BrokerStartup {
             MixAll.printObjectProperties(log, nettyClientConfig);
             MixAll.printObjectProperties(log, messageStoreConfig);
 
+            //构造Controller，会将各类管理器，监听，消息队列 实例构造出来
             final BrokerController controller = new BrokerController(
                 brokerConfig,
                 nettyServerConfig,
@@ -221,12 +228,14 @@ public class BrokerStartup {
             // remember all configs to prevent discard
             controller.getConfiguration().registerConfig(properties);
 
+            //初始化以上构造的各类管理器，监听，消息队列，添加到线程中
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();
                 System.exit(-3);
             }
 
+            //用于保证线程安全退出，程序退出时会触发改任务  kill -15，如果kill -9 则无能为力
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;
                 private AtomicInteger shutdownTimes = new AtomicInteger(0);

@@ -373,6 +373,7 @@ public class BrokerController {
                 }
             }, 1000 * 10, 1000 * 10, TimeUnit.MILLISECONDS);
 
+            //TODO 对定失效读取较慢的消费者？
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -384,6 +385,7 @@ public class BrokerController {
                 }
             }, 3, 3, TimeUnit.MINUTES);
 
+            // 打印消息队列线程的消息消费情况
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -395,6 +397,7 @@ public class BrokerController {
                 }
             }, 10, 1, TimeUnit.SECONDS);
 
+            // 定时输出还未写入到commit log的消息数据
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
                 @Override
@@ -411,6 +414,7 @@ public class BrokerController {
                 this.brokerOuterAPI.updateNameServerAddressList(this.brokerConfig.getNamesrvAddr());
                 log.info("Set user specified name server address: {}", this.brokerConfig.getNamesrvAddr());
             } else if (this.brokerConfig.isFetchNamesrvAddrByAddressServer()) {
+
                 this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
                     @Override
@@ -425,6 +429,7 @@ public class BrokerController {
             }
 
             if (!messageStoreConfig.isEnableDLegerCommitLog()) {
+                // 从节点设置master节点的ip
                 if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {
                     if (this.messageStoreConfig.getHaMasterAddress() != null && this.messageStoreConfig.getHaMasterAddress().length() >= 6) {
                         this.messageStore.updateHaMasterAddress(this.messageStoreConfig.getHaMasterAddress());
@@ -433,6 +438,7 @@ public class BrokerController {
                         this.updateMasterHAServerAddrPeriodically = true;
                     }
                 } else {
+                    //定时输出有多少从节点的数据落后于主节点
                     this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                         @Override
                         public void run() {
@@ -486,8 +492,11 @@ public class BrokerController {
                     log.warn("FileWatchService created error, can't load the certificate dynamically");
                 }
             }
+            //初始化事务性消息
             initialTransaction();
+            //初始化访问控制
             initialAcl();
+
             initialRpcHooks();
         }
         return result;
@@ -627,6 +636,9 @@ public class BrokerController {
         this.brokerStats = brokerStats;
     }
 
+    /**
+     * 对读取数据较慢的消费者设置为失效
+     */
     public void protectBroker() {
         if (this.brokerConfig.isDisableConsumeIfConsumerReadSlowly()) {
             final Iterator<Map.Entry<String, MomentStatsItem>> it = this.brokerStatsManager.getMomentStatsItemSetFallSize().getStatsItemTable().entrySet().iterator();
@@ -841,18 +853,22 @@ public class BrokerController {
 
     public void start() throws Exception {
         if (this.messageStore != null) {
+            //消息存储管理
             this.messageStore.start();
         }
 
         if (this.remotingServer != null) {
+            //tcp 服务端链接服务
             this.remotingServer.start();
         }
 
         if (this.fastRemotingServer != null) {
+            //快速？
             this.fastRemotingServer.start();
         }
 
         if (this.fileWatchService != null) {
+            //文件监控服务，变化后通知观察者
             this.fileWatchService.start();
         }
 
