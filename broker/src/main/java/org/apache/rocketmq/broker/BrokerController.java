@@ -872,6 +872,7 @@ public class BrokerController {
             this.fileWatchService.start();
         }
 
+        // TODO 用来向其他broker节点通讯? 启动客户端消息处理器
         if (this.brokerOuterAPI != null) {
             this.brokerOuterAPI.start();
         }
@@ -880,6 +881,7 @@ public class BrokerController {
             this.pullRequestHoldService.start();
         }
 
+        // 过期通道定时处理
         if (this.clientHousekeepingService != null) {
             this.clientHousekeepingService.start();
         }
@@ -894,9 +896,9 @@ public class BrokerController {
         }
 
 
-
+        //将此broker 注册到name server上
         this.registerBrokerAll(true, false, true);
-
+        //将注册添加到定时任务中，防止上面的未注册成功
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -913,6 +915,7 @@ public class BrokerController {
             this.brokerStatsManager.start();
         }
 
+        //清除过期的请求
         if (this.brokerFastFailure != null) {
             this.brokerFastFailure.start();
         }
@@ -938,6 +941,12 @@ public class BrokerController {
         doRegisterBrokerAll(true, false, topicConfigSerializeWrapper);
     }
 
+    /**
+     * 向Namesrc注册Broker信息,每隔30S执行一次
+     * @param checkOrderConfig
+     * @param oneway
+     * @param forceRegister
+     */
     public synchronized void registerBrokerAll(final boolean checkOrderConfig, boolean oneway, boolean forceRegister) {
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
 

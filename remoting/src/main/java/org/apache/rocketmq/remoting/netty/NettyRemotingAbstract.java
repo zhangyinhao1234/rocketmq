@@ -186,6 +186,7 @@ public abstract class NettyRemotingAbstract {
 
     /**
      * Process incoming request command issued by remote peer.
+     * 处理接收到的数据
      *
      * @param ctx channel handler context.
      * @param cmd request command.
@@ -201,6 +202,7 @@ public abstract class NettyRemotingAbstract {
                 public void run() {
                     try {
                         doBeforeRpcHooks(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd);
+                        //进行消息处理
                         final RemotingCommand response = pair.getObject1().processRequest(ctx, cmd);
                         doAfterRpcHooks(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd, response);
 

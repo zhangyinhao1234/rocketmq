@@ -111,6 +111,20 @@ public class BrokerOuterAPI {
         this.remotingClient.updateNameServerAddressList(lst);
     }
 
+    /**
+     * 向Namesrc注册Broker信息
+     * @param clusterName
+     * @param brokerAddr
+     * @param brokerName
+     * @param brokerId
+     * @param haServerAddr
+     * @param topicConfigWrapper
+     * @param filterServerList
+     * @param oneway
+     * @param timeoutMills
+     * @param compressed
+     * @return
+     */
     public List<RegisterBrokerResult> registerBrokerAll(
         final String clusterName,
         final String brokerAddr,
@@ -171,6 +185,21 @@ public class BrokerOuterAPI {
         return registerBrokerResultList;
     }
 
+    /**
+     * 向Namesrc注册Broker信息
+     * @param namesrvAddr
+     * @param oneway
+     * @param timeoutMills
+     * @param requestHeader
+     * @param body
+     * @return
+     * @throws RemotingCommandException
+     * @throws MQBrokerException
+     * @throws RemotingConnectException
+     * @throws RemotingSendRequestException
+     * @throws RemotingTimeoutException
+     * @throws InterruptedException
+     */
     private RegisterBrokerResult registerBroker(
         final String namesrvAddr,
         final boolean oneway,

@@ -187,6 +187,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                         new NettyEncoder(),
                         new NettyDecoder(),
                         new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
+                        //链接管理器
                         new NettyConnectManageHandler(),
                         new NettyClientHandler());
                 }
@@ -541,6 +542,17 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         }
     }
 
+    /**
+     * 单向消息发送，不需要关注response
+     * @param addr
+     * @param request
+     * @param timeoutMillis
+     * @throws InterruptedException
+     * @throws RemotingConnectException
+     * @throws RemotingTooMuchRequestException
+     * @throws RemotingTimeoutException
+     * @throws RemotingSendRequestException
+     */
     @Override
     public void invokeOneway(String addr, RemotingCommand request, long timeoutMillis) throws InterruptedException,
         RemotingConnectException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException {
