@@ -27,6 +27,9 @@ import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.remoting.ChannelEventListener;
 
+/**
+ * 客户端心跳链接处理（生产/消费者 者端连到 Broker）
+ */
 public class ClientHousekeepingService implements ChannelEventListener {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final BrokerController brokerController;
@@ -38,6 +41,9 @@ public class ClientHousekeepingService implements ChannelEventListener {
         this.brokerController = brokerController;
     }
 
+    /**
+     * 定时扫描异常的连接，清除异常连接
+     */
     public void start() {
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -67,6 +73,11 @@ public class ClientHousekeepingService implements ChannelEventListener {
 
     }
 
+    /***
+     * 连接断开/异常/空闲时 清空通道信息
+     * @param remoteAddr
+     * @param channel
+     */
     @Override
     public void onChannelClose(String remoteAddr, Channel channel) {
         this.brokerController.getProducerManager().doChannelCloseEvent(remoteAddr, channel);
