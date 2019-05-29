@@ -46,12 +46,12 @@ public class MessageStoreConfig {
     private int bitMapLengthConsumeQueueExt = 64;
 
     // CommitLog flush interval
-    // flush data to disk
+    // flush data to disk  500毫秒刷盘
     @ImportantField
     private int flushIntervalCommitLog = 500;
 
     // Only used if TransientStorePool enabled
-    // flush data to FileChannel
+    // flush data to FileChannel  毫秒
     @ImportantField
     private int commitIntervalCommitLog = 200;
 
