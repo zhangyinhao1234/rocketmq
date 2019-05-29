@@ -443,6 +443,11 @@ public class MappedFileQueue {
         return deleteCount;
     }
 
+    /**
+     * 数据刷如文件
+     * @param flushLeastPages
+     * @return
+     */
     public boolean flush(final int flushLeastPages) {
         boolean result = true;
         MappedFile mappedFile = this.findMappedFileByOffset(this.flushedWhere, this.flushedWhere == 0);

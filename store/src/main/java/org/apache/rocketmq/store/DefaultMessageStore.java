@@ -129,6 +129,7 @@ public class DefaultMessageStore implements MessageStore {
         this.cleanCommitLogService = new CleanCommitLogService();
         this.cleanConsumeQueueService = new CleanConsumeQueueService();
         this.storeStatsService = new StoreStatsService();
+        //消息快速索引
         this.indexService = new IndexService(this);
         if (!messageStoreConfig.isEnableDLegerCommitLog()) {
             this.haService = new HAService(this);
@@ -182,7 +183,7 @@ public class DefaultMessageStore implements MessageStore {
                 result = result && this.scheduleMessageService.load();
             }
 
-            // load Commit Log
+            // load Commit Log  加载MapperFile 到 Queue中
             result = result && this.commitLog.load();
 
             // load Consume Queue
@@ -192,6 +193,7 @@ public class DefaultMessageStore implements MessageStore {
                 this.storeCheckpoint =
                     new StoreCheckpoint(StorePathConfigHelper.getStoreCheckpoint(this.messageStoreConfig.getStorePathRootDir()));
 
+                //加载消息快速索引器
                 this.indexService.load(lastExitOK);
 
                 this.recover(lastExitOK);
@@ -914,6 +916,7 @@ public class DefaultMessageStore implements MessageStore {
 //                    }
 
                     if (match) {
+                        //真正的去读取数据
                         SelectMappedBufferResult result = this.commitLog.getData(offset, false);
                         if (result != null) {
                             int size = result.getByteBuffer().getInt(0);

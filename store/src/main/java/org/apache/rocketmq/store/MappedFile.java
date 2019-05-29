@@ -294,6 +294,7 @@ public class MappedFile extends ReferenceResource {
     }
 
     /**
+     * 刷数据到磁盘
      * @return The current flushed position
      */
     public int flush(final int flushLeastPages) {
@@ -306,6 +307,7 @@ public class MappedFile extends ReferenceResource {
                     if (writeBuffer != null || this.fileChannel.position() != 0) {
                         this.fileChannel.force(false);
                     } else {
+                        //缓冲区内文件强行写入文件
                         this.mappedByteBuffer.force();
                     }
                 } catch (Throwable e) {

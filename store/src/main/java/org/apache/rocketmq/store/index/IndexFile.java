@@ -42,6 +42,15 @@ public class IndexFile {
     private final MappedByteBuffer mappedByteBuffer;
     private final IndexHeader indexHeader;
 
+    /**
+     *
+     * @param fileName
+     * @param hashSlotNum
+     * @param indexNum
+     * @param endPhyOffset
+     * @param endTimestamp
+     * @throws IOException
+     */
     public IndexFile(final String fileName, final int hashSlotNum, final int indexNum,
         final long endPhyOffset, final long endTimestamp) throws IOException {
         int fileTotalSize =
@@ -189,6 +198,15 @@ public class IndexFile {
         return result;
     }
 
+    /**
+     * 快速查询消息信息
+     * @param phyOffsets
+     * @param key
+     * @param maxNum
+     * @param begin
+     * @param end
+     * @param lock
+     */
     public void selectPhyOffset(final List<Long> phyOffsets, final String key, final int maxNum,
         final long begin, final long end, boolean lock) {
         if (this.mappedFile.hold()) {

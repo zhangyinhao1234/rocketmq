@@ -72,6 +72,7 @@ public class CommitLog {
         if (FlushDiskType.SYNC_FLUSH == defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {
             this.flushCommitLogService = new GroupCommitService();
         } else {
+            //数据刷盘服务
             this.flushCommitLogService = new FlushRealTimeService();
         }
 
@@ -95,6 +96,7 @@ public class CommitLog {
     }
 
     public void start() {
+        //启动数据刷盘服务
         this.flushCommitLogService.start();
 
         if (defaultMessageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
@@ -966,6 +968,9 @@ public class CommitLog {
         }
     }
 
+    /**
+     * 数据刷盘服务
+     */
     class FlushRealTimeService extends FlushCommitLogService {
         private long lastFlushTimestamp = 0;
         private long printTimes = 0;

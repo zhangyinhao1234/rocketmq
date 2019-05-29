@@ -266,6 +266,7 @@ public class BrokerController {
             }
         }
 
+        //加载消息存储器：加载文件，加载indexfile
         result = result && this.messageStore.load();
 
         if (result) {
