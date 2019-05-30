@@ -34,17 +34,21 @@ public class ClientConfig {
     public static final String SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY = "com.rocketmq.sendMessageWithVIPChannel";
     private String namesrvAddr = NameServerAddressUtils.getNameServerAddresses();
     private String clientIP = RemotingUtil.getLocalAddress();
+    //实例名称，在K8S部署在容器的时候最好自定义 instanceName
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
+    //
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
     protected String namespace;
     protected AccessChannel accessChannel = AccessChannel.LOCAL;
 
     /**
      * Pulling topic information interval from the named server
+     * 定时拉取name server的配置信息
      */
     private int pollNameServerInterval = 1000 * 30;
     /**
      * Heartbeat interval in microseconds with message broker
+     * 和broker的心跳
      */
     private int heartbeatBrokerInterval = 1000 * 30;
     /**

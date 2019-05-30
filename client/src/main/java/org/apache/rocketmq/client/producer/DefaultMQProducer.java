@@ -42,6 +42,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
 /**
+ * 默认的消息消费生产者，你可以选择自己继承 进行一些特性的实现
  * This class is the entry point for applications intending to send messages.
  * </p>
  *
