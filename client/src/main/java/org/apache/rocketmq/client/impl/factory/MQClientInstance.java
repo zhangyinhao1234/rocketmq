@@ -125,6 +125,13 @@ public class MQClientInstance {
         this(clientConfig, instanceIndex, clientId, null);
     }
 
+    /**
+     * 每个topic生成一个 MQClientInstance
+     * @param clientConfig
+     * @param instanceIndex
+     * @param clientId
+     * @param rpcHook
+     */
     public MQClientInstance(ClientConfig clientConfig, int instanceIndex, String clientId, RPCHook rpcHook) {
         this.clientConfig = clientConfig;
         this.instanceIndex = instanceIndex;
@@ -223,6 +230,10 @@ public class MQClientInstance {
         return mqList;
     }
 
+    /**
+     * 启动各项实例
+     * @throws MQClientException
+     */
     public void start() throws MQClientException {
 
         synchronized (this) {

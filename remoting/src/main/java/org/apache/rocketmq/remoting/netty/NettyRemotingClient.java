@@ -364,7 +364,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
 
     /**
-     * 异步发送数据
+     * 同步发送数据
      * @param addr
      * @param request
      * @param timeoutMillis
