@@ -187,7 +187,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                         new NettyEncoder(),
                         new NettyDecoder(),
                         new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
-                        //链接管理器
+                        //链接管理器，使用抽象和模板的的方法，nameserver，生产，消费，broker实现各自的方法
                         new NettyConnectManageHandler(),
                         new NettyClientHandler());
                 }
@@ -663,6 +663,10 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         }
     }
 
+    /**
+     * 连接管理器，与客户端连接发生变化的时候会把NettyEvent（事件）放到LinkedBlockingQueue队列中，
+     * NettyEventExecutor 线程处理，会不断的读取队列数据，达到对数据路由信息管理的功能
+     */
     class NettyConnectManageHandler extends ChannelDuplexHandler {
         @Override
         public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress, SocketAddress localAddress,

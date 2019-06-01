@@ -574,6 +574,9 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
+    /**
+     * Netty事件监听处理线程
+     */
     class NettyEventExecutor extends ServiceThread {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
         private final int maxSize = 10000;
@@ -590,6 +593,7 @@ public abstract class NettyRemotingAbstract {
         public void run() {
             log.info(this.getServiceName() + " service started");
 
+            //getChannelEventListener 定义的抽象方法，在继承的类中实现，并且对属性赋值。
             final ChannelEventListener listener = NettyRemotingAbstract.this.getChannelEventListener();
 
             while (!this.isStopped()) {

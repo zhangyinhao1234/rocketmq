@@ -131,6 +131,15 @@ public class NamesrvStartup {
         return controller;
     }
 
+    /**
+     * controller 初始化
+     * remotingServer的构建
+     * registerProcessor
+     * 启动服务
+     * @param controller
+     * @return
+     * @throws Exception
+     */
     public static NamesrvController start(final NamesrvController controller) throws Exception {
 
         if (null == controller) {
