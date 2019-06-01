@@ -591,7 +591,12 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 }
 
                 //创建客户端相关实例
-                //MQClientManager，MQClientInstance，MQClientAPIImpl，PullMessageService，RebalanceService，DefaultMQProducer，MQAdminImpl
+                //MQClientManager，MQClientInstance，
+                // MQClientAPIImpl，用户发送和拉取消息的API，
+                // PullMessageService， 用于定时拉取消息
+                // RebalanceService，
+                // DefaultMQProducer，用于对外构造消息生产者
+                // MQAdminImpl
                 this.mQClientFactory = MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQPushConsumer, this.rpcHook);
 
                 this.rebalanceImpl.setConsumerGroup(this.defaultMQPushConsumer.getConsumerGroup());
