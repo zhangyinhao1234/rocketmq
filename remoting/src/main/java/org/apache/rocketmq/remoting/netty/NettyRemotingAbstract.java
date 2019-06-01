@@ -138,6 +138,7 @@ public abstract class NettyRemotingAbstract {
 
     /**
      * Entry of incoming command processing.
+     * 处理请求进来的服务和返回的服务
      *
      * <p>
      * <strong>Note:</strong>
@@ -202,9 +203,11 @@ public abstract class NettyRemotingAbstract {
                 @Override
                 public void run() {
                     try {
+                        //事前
                         doBeforeRpcHooks(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd);
                         //进行消息处理
                         final RemotingCommand response = pair.getObject1().processRequest(ctx, cmd);
+                        //事后
                         doAfterRpcHooks(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd, response);
 
                         if (!cmd.isOnewayRPC()) {
@@ -212,6 +215,7 @@ public abstract class NettyRemotingAbstract {
                                 response.setOpaque(opaque);
                                 response.markResponseType();
                                 try {
+                                    //返回数据
                                     ctx.writeAndFlush(response);
                                 } catch (Throwable e) {
                                     log.error("process request over, but response failed", e);
@@ -236,6 +240,7 @@ public abstract class NettyRemotingAbstract {
                 }
             };
 
+
             if (pair.getObject1().rejectRequest()) {
                 final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_BUSY,
                     "[REJECTREQUEST]system busy, start flow control for a while");
@@ -245,6 +250,7 @@ public abstract class NettyRemotingAbstract {
             }
 
             try {
+                //通过线程执行任务
                 final RequestTask requestTask = new RequestTask(run, ctx.channel(), cmd);
                 pair.getObject2().submit(requestTask);
             } catch (RejectedExecutionException e) {

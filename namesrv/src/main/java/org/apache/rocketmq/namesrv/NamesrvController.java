@@ -156,7 +156,7 @@ public class NamesrvController {
     }
 
     /**
-     * 注册 netty 的消息处理器
+     * 注册 netty 的消息处理器，NettyServerHandler 为消息监听的处理入口，会通过注册的 RequestProcessor 执行 ClusterTestRequestProcessor 的方法
      */
     private void registerProcessor() {
         if (namesrvConfig.isClusterTest()) {
