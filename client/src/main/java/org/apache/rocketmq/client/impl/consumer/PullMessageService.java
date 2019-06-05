@@ -29,6 +29,7 @@ import org.apache.rocketmq.common.utils.ThreadUtils;
 
 /**
  * 定时拉消息服务
+ * 并提交消费任务到 ConsumeMessageService。
  */
 public class PullMessageService extends ServiceThread {
     private final InternalLogger log = ClientLogger.getLog();
