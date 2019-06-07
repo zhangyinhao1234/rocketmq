@@ -144,6 +144,12 @@ public class MixAll {
         return 0;
     }
 
+    /**
+     * 新的数据写入，原文件删除，
+     * @param str
+     * @param fileName
+     * @throws IOException
+     */
     public static void string2File(final String str, final String fileName) throws IOException {
 
         String tmpFile = fileName + ".tmp";
@@ -159,6 +165,7 @@ public class MixAll {
         file.delete();
 
         file = new File(tmpFile);
+        //文件重命名
         file.renameTo(new File(fileName));
     }
 
