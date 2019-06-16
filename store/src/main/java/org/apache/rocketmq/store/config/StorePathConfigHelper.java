@@ -20,6 +20,11 @@ import java.io.File;
 
 public class StorePathConfigHelper {
 
+    /**
+     * 存放消息队列信息
+     * @param rootDir
+     * @return
+     */
     public static String getStorePathConsumeQueue(final String rootDir) {
         return rootDir + File.separator + "consumequeue";
     }
@@ -28,6 +33,11 @@ public class StorePathConfigHelper {
         return rootDir + File.separator + "consumequeue_ext";
     }
 
+    /**
+     * 存放索引文件
+     * @param rootDir
+     * @return
+     */
     public static String getStorePathIndex(final String rootDir) {
         return rootDir + File.separator + "index";
     }
