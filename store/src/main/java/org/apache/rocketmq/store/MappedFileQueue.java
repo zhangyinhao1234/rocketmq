@@ -30,7 +30,7 @@ import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 
 /**
- *
+ * 对MappedFile的操作
  */
 public class MappedFileQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
@@ -444,7 +444,7 @@ public class MappedFileQueue {
     }
 
     /**
-     * 数据刷如文件
+     * 数据刷入文件
      * @param flushLeastPages
      * @return
      */

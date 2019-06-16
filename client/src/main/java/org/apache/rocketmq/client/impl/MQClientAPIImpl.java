@@ -316,7 +316,7 @@ public class MQClientAPIImpl {
     }
 
     /**
-     *
+     * 发送消息的API
      * @param addr
      * @param brokerName
      * @param msg
