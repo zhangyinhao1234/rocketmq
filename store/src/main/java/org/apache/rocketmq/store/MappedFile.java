@@ -228,7 +228,7 @@ public class MappedFile extends ReferenceResource {
         int currentPos = this.wrotePosition.get();
         //文件未写满
         if (currentPos < this.fileSize) {
-            //从 position 复制一份ByteBuffer
+            //从 position 复制一份ByteBuffer，复制的buffer数据修改后源buffer也会修改
             ByteBuffer byteBuffer = writeBuffer != null ? writeBuffer.slice() : this.mappedByteBuffer.slice();
             byteBuffer.position(currentPos);
             AppendMessageResult result = null;
