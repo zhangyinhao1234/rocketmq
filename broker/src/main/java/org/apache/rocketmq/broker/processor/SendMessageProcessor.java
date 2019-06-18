@@ -80,6 +80,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             case RequestCode.CONSUMER_SEND_MSG_BACK:
                 return this.consumerSendMsgBack(ctx, request);
             default:
+                //将客户端发过来的原数据进行解析
                 SendMessageRequestHeader requestHeader = parseRequestHeader(request);
                 if (requestHeader == null) {
                     return null;
@@ -331,6 +332,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         }
 
         response.setCode(-1);
+        //检查  当topic没有创建的时候会创建topic信息
         super.msgCheck(ctx, requestHeader, response);
         if (response.getCode() != -1) {
             return response;

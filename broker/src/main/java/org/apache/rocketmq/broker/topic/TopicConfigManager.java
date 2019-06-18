@@ -212,6 +212,7 @@ public class TopicConfigManager extends ConfigManager {
 
                         createNew = true;
 
+                        //刷新配置信息到磁盘
                         this.persist();
                     }
                 } finally {
