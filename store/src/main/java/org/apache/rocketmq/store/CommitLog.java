@@ -1198,8 +1198,15 @@ public class CommitLog {
     class DefaultAppendMessageCallback implements AppendMessageCallback {
         // File at the end of the minimum fixed length empty
         private static final int END_FILE_MIN_BLANK_LENGTH = 4 + 4;
+        /**
+         * 存储在内存中的消息编号字节Buffer
+         */
         private final ByteBuffer msgIdMemory;
-        // Store the message content
+        /**
+         * Store the message content
+         * 存储在内存中的消息字节Buffer
+         * 当消息传递到{@link #doAppend(long, ByteBuffer, int, MessageExtBrokerInner)}方法时，最终写到该参数
+         */
         private final ByteBuffer msgStoreItemMemory;
         // The maximum length of the message
         private final int maxMessageSize;
