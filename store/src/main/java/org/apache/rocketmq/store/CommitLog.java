@@ -78,6 +78,7 @@ public class CommitLog {
 
         this.commitLogService = new CommitRealTimeService();
 
+        //数据写盘
         this.appendMessageCallback = new DefaultAppendMessageCallback(defaultMessageStore.getMessageStoreConfig().getMaxMessageSize());
         batchEncoderThreadLocal = new ThreadLocal<MessageExtBatchEncoder>() {
             @Override
@@ -591,6 +592,7 @@ public class CommitLog {
             // global
             msg.setStoreTimestamp(beginLockTimestamp);
 
+            //文件不存在会创建一个1G的文件
             if (null == mappedFile || mappedFile.isFull()) {
                 //获取最新的文件，顺序写
                 mappedFile = this.mappedFileQueue.getLastMappedFile(0); // Mark: NewFile may be cause noise
@@ -606,7 +608,7 @@ public class CommitLog {
             switch (result.getStatus()) {
                 case PUT_OK:
                     break;
-                case END_OF_FILE:
+                case END_OF_FILE:// 当文件尾时，获取新的映射文件，并进行插入
                     unlockMappedFile = mappedFile;
                     // Create a new file, re-write the message
                     mappedFile = this.mappedFileQueue.getLastMappedFile(0);
@@ -650,12 +652,19 @@ public class CommitLog {
         storeStatsService.getSinglePutMessageTopicTimesTotal(msg.getTopic()).incrementAndGet();
         storeStatsService.getSinglePutMessageTopicSizeTotal(topic).addAndGet(result.getWroteBytes());
 
+        /// 进行同步||异步 flush||commit
         handleDiskFlush(result, putMessageResult, msg);
         handleHA(result, putMessageResult, msg);
 
         return putMessageResult;
     }
 
+    /**
+     * // 进行同步||异步 flush||commit
+     * @param result
+     * @param putMessageResult
+     * @param messageExt
+     */
     public void handleDiskFlush(AppendMessageResult result, PutMessageResult putMessageResult, MessageExt messageExt) {
         // Synchronization flush
         if (FlushDiskType.SYNC_FLUSH == this.defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {
@@ -915,6 +924,9 @@ public class CommitLog {
         protected static final int RETRY_TIMES_OVER = 10;
     }
 
+    /**
+     * 将内存中的数据定时刷入 FileChannel  200毫秒
+     */
     class CommitRealTimeService extends FlushCommitLogService {
 
         private long lastCommitTimestamp = 0;
@@ -969,7 +981,7 @@ public class CommitLog {
     }
 
     /**
-     * 数据刷盘服务
+     * 数据定时刷入磁盘，500毫秒
      */
     class FlushRealTimeService extends FlushCommitLogService {
         private long lastFlushTimestamp = 0;
@@ -1213,7 +1225,7 @@ public class CommitLog {
          * 向文件中写入消息信息
          * @param fileFromOffset
          * @param byteBuffer
-         * @param maxBlank
+         * @param maxBlank 该文件剩余可写入的字节数
          * @param msgInner
          * @return
          */
@@ -1283,6 +1295,7 @@ public class CommitLog {
 
             // Determines whether there is sufficient free space
             if ((msgLen + END_FILE_MIN_BLANK_LENGTH) > maxBlank) {
+                //pos == 0
                 this.resetByteBuffer(this.msgStoreItemMemory, maxBlank);
                 // 1 TOTALSIZE
                 this.msgStoreItemMemory.putInt(maxBlank);
