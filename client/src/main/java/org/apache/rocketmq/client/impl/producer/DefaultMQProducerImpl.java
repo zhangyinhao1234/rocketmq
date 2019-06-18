@@ -585,7 +585,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         // 发送消息到broker，核心
                         sendResult = this.sendKernelImpl(msg, mq, communicationMode, sendCallback, topicPublishInfo, timeout - costTime);
                         endTimestamp = System.currentTimeMillis();
-                        // 更新Broker可用性信息
+                        // 更新Broker可用性信息（默认配置不更新）
                         this.updateFaultItem(mq.getBrokerName(), endTimestamp - beginTimestampPrev, false);
                         switch (communicationMode) {
                             case ASYNC:
@@ -859,11 +859,11 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                             tmpMessage,
                             requestHeader,
                             timeout - costTimeAsync,
-                            communicationMode,
+                            communicationMode,//通信模式 CommunicationMode.class
                             sendCallback,
                             topicPublishInfo,
                             this.mQClientFactory,
-                            this.defaultMQProducer.getRetryTimesWhenSendAsyncFailed(),
+                            this.defaultMQProducer.getRetryTimesWhenSendAsyncFailed(),//失败重试次数
                             context,
                             this);
                         break;
@@ -1297,6 +1297,15 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
     /**
      * DEFAULT SYNC -------------------------------------------------------
+     */
+    /**
+     * 默认使用 SYNC
+     * @param msg
+     * @return
+     * @throws MQClientException
+     * @throws RemotingException
+     * @throws MQBrokerException
+     * @throws InterruptedException
      */
     public SendResult send(
         Message msg) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
