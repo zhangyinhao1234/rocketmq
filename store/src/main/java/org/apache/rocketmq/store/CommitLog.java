@@ -1021,6 +1021,7 @@ public class CommitLog {
                     }
 
                     long begin = System.currentTimeMillis();
+                    //数据刷新到磁盘
                     CommitLog.this.mappedFileQueue.flush(flushPhysicQueueLeastPages);
                     long storeTimestamp = CommitLog.this.mappedFileQueue.getStoreTimestamp();
                     if (storeTimestamp > 0) {

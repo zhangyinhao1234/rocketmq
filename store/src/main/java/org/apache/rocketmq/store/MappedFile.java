@@ -18,6 +18,7 @@ package org.apache.rocketmq.store;
 
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
@@ -42,35 +44,75 @@ import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 
 /**
- * 和实际文件的映射
+ * {@link #wrotePosition}代表着追加到MappedByteBuffer/writeBuffer的位置,具体哪个要看是否有字节缓冲池
+ * <p>
+ * {@link #committedPosition}代表着将{@link #writeBuffer}内的数据写入到文件通道{@link #fileChannel}的位置，一般要满足{@link #writeBuffer}内数据大于16KB时才触发Commit，按照页写入数据，效率比较高
+ * <p>
+ * {@link #flushedPosition}代表着刷盘位置，可能是{@link #mappedByteBuffer}或者{@link #fileChannel}进行force()前置刷盘, 值最小
+ * <p>
+ * 异步刷盘有两种策略，一种是通过字节缓冲池+FileChannel实现;另一种是通过MappedByteBuffer实现
+ * 默认使用MappedByteBuffer，借助其内存映射特性获得极高的写入性能
+ * <p>
+ * 映射文件
  */
 public class MappedFile extends ReferenceResource {
+    /**
+     * 文件系统缓存里内存页的最小分配单元,4K
+     */
     public static final int OS_PAGE_SIZE = 1024 * 4;
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
-
+    /**
+     * 映射虚拟内存总字节数
+     */
     private static final AtomicLong TOTAL_MAPPED_VIRTUAL_MEMORY = new AtomicLong(0);
-
+    /**
+     * 映射文件总数
+     */
     private static final AtomicInteger TOTAL_MAPPED_FILES = new AtomicInteger(0);
+    /**
+     * 当前追加到MappedByteBuffer的位置
+     */
     protected final AtomicInteger wrotePosition = new AtomicInteger(0);
-    //ADD BY ChenYang
+    /**
+     * ADD BY ChenYang
+     * 当前commit位置
+     */
     protected final AtomicInteger committedPosition = new AtomicInteger(0);
+    /**
+     * 当前flush位置
+     */
     private final AtomicInteger flushedPosition = new AtomicInteger(0);
+    /**
+     * 文件大小
+     */
     protected int fileSize;
     protected FileChannel fileChannel;
     /**
      * Message will put to here first, and then reput to FileChannel if writeBuffer is not null.
+     * 写入缓冲
      */
     protected ByteBuffer writeBuffer = null;
+    /**
+     * writeBuffer缓存池
+     */
     protected TransientStorePool transientStorePool = null;
     private String fileName;
     /**
      * 单个文件大小默认1G ，文件名长度为20位，左边补零，剩余为起始偏移量，比如00000000000000000000代表了第一个文件，起始偏移量为0，
      * 文件大小为1G=1073741824；当第一个文件写满了，第二个文件为00000000001073741824，起始偏移量为1073741824
+     * 文件开始的offset。目前文件名即offset
      */
     private long fileFromOffset;
     private File file;
     private MappedByteBuffer mappedByteBuffer;
+    /**
+     * 最后插入数据时间。即{@link #mappedByteBuffer}变更时间
+     */
     private volatile long storeTimestamp = 0;
+    /**
+     * 是否最先创建在队列
+     * {@link MappedFileQueue#getLastMappedFile(long, boolean)}
+     */
     private boolean firstCreateInQueue = false;
 
     public MappedFile() {
@@ -81,12 +123,13 @@ public class MappedFile extends ReferenceResource {
     }
 
     public MappedFile(final String fileName, final int fileSize,
-        final TransientStorePool transientStorePool) throws IOException {
+                      final TransientStorePool transientStorePool) throws IOException {
         init(fileName, fileSize, transientStorePool);
     }
 
     /**
      * 检查目录是否存在
+     *
      * @param dirName
      */
     public static void ensureDirOK(final String dirName) {
@@ -120,7 +163,7 @@ public class MappedFile extends ReferenceResource {
     }
 
     private static Method method(Object target, String methodName, Class<?>[] args)
-        throws NoSuchMethodException {
+            throws NoSuchMethodException {
         try {
             return target.getClass().getMethod(methodName, args);
         } catch (NoSuchMethodException e) {
@@ -155,7 +198,7 @@ public class MappedFile extends ReferenceResource {
     }
 
     public void init(final String fileName, final int fileSize,
-        final TransientStorePool transientStorePool) throws IOException {
+                     final TransientStorePool transientStorePool) throws IOException {
         init(fileName, fileSize);
         this.writeBuffer = transientStorePool.borrowBuffer();
         this.transientStorePool = transientStorePool;
@@ -163,6 +206,7 @@ public class MappedFile extends ReferenceResource {
 
     /**
      * 初始化，加载文件
+     *
      * @param fileName
      * @param fileSize
      * @throws IOException
@@ -217,6 +261,7 @@ public class MappedFile extends ReferenceResource {
 
     /**
      * 写入数据
+     *
      * @param messageExt
      * @param cb
      * @return
@@ -295,6 +340,7 @@ public class MappedFile extends ReferenceResource {
 
     /**
      * 刷数据到磁盘
+     *
      * @return The current flushed position
      */
     public int flush(final int flushLeastPages) {
@@ -419,11 +465,11 @@ public class MappedFile extends ReferenceResource {
                 return new SelectMappedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
             } else {
                 log.warn("matched, but hold failed, request pos: " + pos + ", fileFromOffset: "
-                    + this.fileFromOffset);
+                        + this.fileFromOffset);
             }
         } else {
             log.warn("selectMappedBuffer request pos invalid, request pos: " + pos + ", size: " + size
-                + ", fileFromOffset: " + this.fileFromOffset);
+                    + ", fileFromOffset: " + this.fileFromOffset);
         }
 
         return null;
@@ -449,13 +495,13 @@ public class MappedFile extends ReferenceResource {
     public boolean cleanup(final long currentRef) {
         if (this.isAvailable()) {
             log.error("this file[REF:" + currentRef + "] " + this.fileName
-                + " have not shutdown, stop unmapping.");
+                    + " have not shutdown, stop unmapping.");
             return false;
         }
 
         if (this.isCleanupOver()) {
             log.error("this file[REF:" + currentRef + "] " + this.fileName
-                + " have cleanup, do not do it again.");
+                    + " have cleanup, do not do it again.");
             return true;
         }
 
@@ -477,9 +523,9 @@ public class MappedFile extends ReferenceResource {
                 long beginTime = System.currentTimeMillis();
                 boolean result = this.file.delete();
                 log.info("delete file[REF:" + this.getRefCount() + "] " + this.fileName
-                    + (result ? " OK, " : " Failed, ") + "W:" + this.getWrotePosition() + " M:"
-                    + this.getFlushedPosition() + ", "
-                    + UtilAll.computeEclipseTimeMilliseconds(beginTime));
+                        + (result ? " OK, " : " Failed, ") + "W:" + this.getWrotePosition() + " M:"
+                        + this.getFlushedPosition() + ", "
+                        + UtilAll.computeEclipseTimeMilliseconds(beginTime));
             } catch (Exception e) {
                 log.warn("close file channel " + this.fileName + " Failed. ", e);
             }
@@ -487,7 +533,7 @@ public class MappedFile extends ReferenceResource {
             return true;
         } else {
             log.warn("destroy mapped file[REF:" + this.getRefCount() + "] " + this.fileName
-                + " Failed. cleanupOver: " + this.cleanupOver);
+                    + " Failed. cleanupOver: " + this.cleanupOver);
         }
 
         return false;
@@ -542,11 +588,11 @@ public class MappedFile extends ReferenceResource {
         // force flush when prepare load finished
         if (type == FlushDiskType.SYNC_FLUSH) {
             log.info("mapped file warm-up done, force to disk, mappedFile={}, costTime={}",
-                this.getFileName(), System.currentTimeMillis() - beginTime);
+                    this.getFileName(), System.currentTimeMillis() - beginTime);
             mappedByteBuffer.force();
         }
         log.info("mapped file warm-up done. mappedFile={}, costTime={}", this.getFileName(),
-            System.currentTimeMillis() - beginTime);
+                System.currentTimeMillis() - beginTime);
 
         this.mlock();
     }
