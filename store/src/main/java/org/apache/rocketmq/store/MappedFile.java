@@ -484,6 +484,14 @@ public class MappedFile extends ReferenceResource {
         return this.fileSize == this.wrotePosition.get();
     }
 
+    /**
+     * 根据 pos 获取 指定size 映射Buffer
+     *
+     * @param pos  当前 Buffer 的 pos
+     * @param size 长度
+     * @return 映射Buffer
+     * @see #getReadPosition()
+     */
     public SelectMappedBufferResult selectMappedBuffer(int pos, int size) {
         int readPosition = getReadPosition();
         if ((pos + size) <= readPosition) {
@@ -506,6 +514,13 @@ public class MappedFile extends ReferenceResource {
         return null;
     }
 
+    /**
+     * 根据 pos 获取 映射Buffer
+     *
+     * @param pos 当前 Buffer 的 pos
+     * @return 映射Buffer
+     * @see #getReadPosition()
+     */
     public SelectMappedBufferResult selectMappedBuffer(int pos) {
         int readPosition = getReadPosition();
         if (pos < readPosition && pos >= 0) {

@@ -26,6 +26,7 @@ import org.apache.rocketmq.store.config.StorePathConfigHelper;
 
 /**
  * 针对 MappedFileQueue 的封装使用
+ * 消费队列,存储消息在CommotLog的全局偏移量,消息长度,Message Tag HashCode
  */
 public class ConsumeQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
@@ -39,13 +40,31 @@ public class ConsumeQueue {
 
     private final DefaultMessageStore defaultMessageStore;
 
+    /**
+     * 封装了指定topic的指定queue的文件目录,类似CommitLog
+     */
     private final MappedFileQueue mappedFileQueue;
     private final String topic;
+    /**
+     * 队列编号
+     */
     private final int queueId;
+    /**
+     * 消息位置信息ByteBuffer
+     */
     private final ByteBuffer byteBufferIndex;
 
+    /**
+     * 文件存储目录,${user.home}/store/consumequeue
+     */
     private final String storePath;
+    /**
+     * 每个映射文件大小,默认300000*20=6000000,也就是每个ConsumerQueue大小为5.72MB=5860KB=6000000B,实际文件大小就是如此
+     */
     private final int mappedFileSize;
+    /**
+     * 最大重放消息commitLog存储位置
+     */
     private long maxPhysicOffset = -1;
     private volatile long minLogicOffset = 0;
     private ConsumeQueueExt consumeQueueExt = null;
@@ -62,11 +81,13 @@ public class ConsumeQueue {
 
         this.topic = topic;
         this.queueId = queueId;
-
+        //ConsumeQueue存储目录,${user.home}\store\consumequeue\tpoic\queueId
+        //比如 C:\Users\Administrator\store\consumequeue\test1\1
         String queueDir = this.storePath
             + File.separator + topic
             + File.separator + queueId;
 
+        //针对ConsumeQueue的存储目录生成一个MappedFileQueue,类似CommitLog,将目录封装成一个MappedFileQueue,对外提供无限量的存储空间
         this.mappedFileQueue = new MappedFileQueue(queueDir, mappedFileSize, null);
 
         this.byteBufferIndex = ByteBuffer.allocate(CQ_STORE_UNIT_SIZE);
@@ -103,7 +124,7 @@ public class ConsumeQueue {
             MappedFile mappedFile = mappedFiles.get(index);
             ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
             long processOffset = mappedFile.getFileFromOffset();
-            long mappedFileOffset = 0;
+            long mappedFileOffset = 0;// 记录：当前遍历 MappedFile 最后一个有内容的offset
             long maxExtAddr = 1;
             while (true) {
                 for (int i = 0; i < mappedFileSizeLogics; i += CQ_STORE_UNIT_SIZE) {
@@ -111,6 +132,7 @@ public class ConsumeQueue {
                     int size = byteBuffer.getInt();
                     long tagsCode = byteBuffer.getLong();
 
+                    // 处理mappedFileOffset
                     if (offset >= 0 && size > 0) {
                         mappedFileOffset = i + CQ_STORE_UNIT_SIZE;
                         this.maxPhysicOffset = offset + size;
@@ -124,6 +146,7 @@ public class ConsumeQueue {
                     }
                 }
 
+                // 根据不同情况处理
                 if (mappedFileOffset == mappedFileSizeLogics) {
                     index++;
                     if (index >= mappedFiles.size()) {
@@ -145,6 +168,7 @@ public class ConsumeQueue {
                 }
             }
 
+            // 设置flush/commit的offset
             processOffset += mappedFileOffset;
             this.mappedFileQueue.setFlushedWhere(processOffset);
             this.mappedFileQueue.setCommittedWhere(processOffset);
@@ -382,6 +406,7 @@ public class ConsumeQueue {
         return this.minLogicOffset / CQ_STORE_UNIT_SIZE;
     }
 
+
     public void putMessagePositionInfoWrapper(DispatchRequest request) {
         final int maxRetries = 30;
         boolean canWrite = this.defaultMessageStore.getRunningFlags().isCQWriteable();
@@ -423,6 +448,7 @@ public class ConsumeQueue {
         log.error("[BUG]consume queue can not write, {} {}", this.topic, this.queueId);
         this.defaultMessageStore.getRunningFlags().makeLogicsQueueError();
     }
+
 
     private boolean putMessagePositionInfo(final long offset, final int size, final long tagsCode,
         final long cqOffset) {

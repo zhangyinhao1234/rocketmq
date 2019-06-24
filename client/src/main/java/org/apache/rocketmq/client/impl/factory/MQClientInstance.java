@@ -218,6 +218,12 @@ public class MQClientInstance {
         return info;
     }
 
+    /**
+     * 将路由信息中的 QueueData 转为 MessageQueue MessageQueue#getQueueId() 居然是循环中的 i 变量
+     * @param topic
+     * @param route
+     * @return
+     */
     public static Set<MessageQueue> topicRouteData2TopicSubscribeInfo(final String topic, final TopicRouteData route) {
         Set<MessageQueue> mqList = new HashSet<MessageQueue>();
         List<QueueData> qds = route.getQueueDatas();
