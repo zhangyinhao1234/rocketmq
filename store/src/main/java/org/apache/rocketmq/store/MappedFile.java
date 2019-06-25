@@ -522,6 +522,7 @@ public class MappedFile extends ReferenceResource {
      * @see #getReadPosition()
      */
     public SelectMappedBufferResult selectMappedBuffer(int pos) {
+        //当前写入到mapperbuffer的位置
         int readPosition = getReadPosition();
         if (pos < readPosition && pos >= 0) {
             if (this.hold()) {

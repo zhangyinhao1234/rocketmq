@@ -27,6 +27,7 @@ import org.apache.rocketmq.store.config.StorePathConfigHelper;
 /**
  * 针对 MappedFileQueue 的封装使用
  * 消费队列,存储消息在CommotLog的全局偏移量,消息长度,Message Tag HashCode
+ * 存储 offset：消息在CommotLog的位置（Long），size：消息长度（Int），tagsCode：消息tagsCode（Long） 共20个字节
  */
 public class ConsumeQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
@@ -93,6 +94,7 @@ public class ConsumeQueue {
 
         this.byteBufferIndex = ByteBuffer.allocate(CQ_STORE_UNIT_SIZE);
 
+        // 默认为 fasle
         if (defaultMessageStore.getMessageStoreConfig().isEnableConsumeQueueExt()) {
             this.consumeQueueExt = new ConsumeQueueExt(
                 topic,

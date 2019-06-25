@@ -1853,6 +1853,9 @@ public class DefaultMessageStore implements MessageStore {
 
         /**
          * 是否commitLog需要重放消息
+         * reputFromOffset < 最后一个MappedFile的文件名称+此文件的wrotePotision
+         *
+         * @return 是否
          */
         private boolean isCommitLogAvailable() {
             return this.reputFromOffset < DefaultMessageStore.this.commitLog.getMaxOffset();
@@ -1878,6 +1881,7 @@ public class DefaultMessageStore implements MessageStore {
                         this.reputFromOffset = result.getStartOffset();
 
                         // 遍历MappedByteBuffer
+                        //每读一轮,消息前4字节表示消息总长度,按消息存储结构读取,如果还有剩余的就继续读
                         for (int readSize = 0; readSize < result.getSize() && doNext; ) {
                             // 生成重放消息重放调度请求
                             DispatchRequest dispatchRequest =
