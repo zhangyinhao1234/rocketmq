@@ -67,6 +67,9 @@ public class DefaultMessageStore implements MessageStore {
     // CommitLog
     private final CommitLog commitLog;
 
+    /**
+     * 用于保存消息队列信息
+     */
     private final ConcurrentMap<String/* topic */, ConcurrentMap<Integer/* queueId */, ConsumeQueue>> consumeQueueTable;
 
     private final FlushConsumeQueueService flushConsumeQueueService;
@@ -187,7 +190,7 @@ public class DefaultMessageStore implements MessageStore {
             // load Commit Log  加载MapperFile 到 Queue中
             result = result && this.commitLog.load();
 
-            // load Consume Queue
+            // load Consume Queue  ConsumeQueue
             result = result && this.loadConsumeQueue();
 
             if (result) {
@@ -1301,15 +1304,21 @@ public class DefaultMessageStore implements MessageStore {
         return file.exists();
     }
 
+    /**
+     * 加载消息队列，加载ConsumeQueue 的配置文件，topic信息在这里
+     * @return
+     */
     private boolean loadConsumeQueue() {
         File dirLogic = new File(StorePathConfigHelper.getStorePathConsumeQueue(this.messageStoreConfig.getStorePathRootDir()));
         File[] fileTopicList = dirLogic.listFiles();
         if (fileTopicList != null) {
 
+            // 目录名为topic 名称
             for (File fileTopic : fileTopicList) {
                 String topic = fileTopic.getName();
 
                 File[] fileQueueIdList = fileTopic.listFiles();
+                //topic 目录下的文件为queue，队列的名字为数字
                 if (fileQueueIdList != null) {
                     for (File fileQueueId : fileQueueIdList) {
                         int queueId;

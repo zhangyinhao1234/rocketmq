@@ -31,6 +31,7 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 
 /**
  * 对MappedFile的操作
+ * 用在commitlog和 ConsumeQueue 的消息队列文件上
  */
 public class MappedFileQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
@@ -42,6 +43,9 @@ public class MappedFileQueue {
 
     private final int mappedFileSize;
 
+    /**
+     * 用于存放某个消息队列下的文件集合
+     */
     private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
 
     private final AllocateMappedFileService allocateMappedFileService;
@@ -51,6 +55,12 @@ public class MappedFileQueue {
 
     private volatile long storeTimestamp = 0;
 
+    /**
+     *
+     * @param storePath 消息队列文件目录： 比如 C:\Users\Administrator\store\consumequeue\test1\1
+     * @param mappedFileSize 某个消息队列下单个文件的大小
+     * @param allocateMappedFileService
+     */
     public MappedFileQueue(final String storePath, int mappedFileSize,
         AllocateMappedFileService allocateMappedFileService) {
         this.storePath = storePath;

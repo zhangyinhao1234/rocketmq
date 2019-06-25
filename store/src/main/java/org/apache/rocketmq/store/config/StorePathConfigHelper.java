@@ -18,10 +18,13 @@ package org.apache.rocketmq.store.config;
 
 import java.io.File;
 
+/**
+ * Broker 配置文件
+ */
 public class StorePathConfigHelper {
 
     /**
-     * 存放消息队列信息
+     * 存放消息队列信息，broker的配置
      * @param rootDir
      * @return
      */
